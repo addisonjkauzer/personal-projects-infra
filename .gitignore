@@ -1,0 +1,30 @@
+# Compiled output
+*.js
+!jest.config.js
+*.d.ts
+
+# Dependencies
+node_modules
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+
+# IDE
+.idea
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Test coverage
+coverage
