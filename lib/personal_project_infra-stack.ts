@@ -4,6 +4,7 @@ import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 import * as path from 'path';
 
@@ -24,12 +25,18 @@ export class PersonalProjectInfraStack extends cdk.Stack {
       memorySize: 3008,
       environment: {
         RECORDINGS_BUCKET: recordingsBucket.bucketName,
+        ANTHROPIC_API_KEY_PARAM: '/linkedin-puzzle-solvers/anthropic-api-key',
       },
     });
 
     visualizerLambda.addToRolePolicy(new iam.PolicyStatement({
       actions: ['cloudwatch:PutMetricData'],
       resources: ['*'],
+    }));
+
+    visualizerLambda.addToRolePolicy(new iam.PolicyStatement({
+      actions: ['ssm:GetParameter'],
+      resources: [`arn:aws:ssm:${this.region}:${this.account}:parameter/linkedin-puzzle-solvers/anthropic-api-key`],
     }));
 
     recordingsBucket.grantPut(visualizerLambda);
