@@ -47,6 +47,10 @@ export class PersonalProjectInfraStack extends cdk.Stack {
       description: 'Triggers LinkedIn Puzzle visualizeAlgorithm tests daily at 12:05 AM UTC',
     });
 
-    dailyRule.addTarget(new targets.LambdaFunction(visualizerLambda));
+    for (const puzzle of ['ZIP', 'SUDOKU', 'TANGO', 'QUEENS', 'PINPOINT']) {
+      dailyRule.addTarget(new targets.LambdaFunction(visualizerLambda, {
+        event: events.RuleTargetInput.fromObject({ puzzle }),
+      }));
+    }
   }
 }
