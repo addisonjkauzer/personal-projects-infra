@@ -69,6 +69,13 @@ export class PersonalProjectInfraStack extends cdk.Stack {
       comment: 'LinkedIn Puzzle Recordings',
     });
 
+    visualizerLambda.addEnvironment('CLOUDFRONT_DISTRIBUTION_ID', distribution.distributionId);
+
+    visualizerLambda.addToRolePolicy(new iam.PolicyStatement({
+      actions: ['cloudfront:CreateInvalidation'],
+      resources: [`arn:aws:cloudfront::${this.account}:distribution/${distribution.distributionId}`],
+    }));
+
     new cdk.CfnOutput(this, 'CloudFrontDomain', {
       value: `https://${distribution.distributionDomainName}`,
       description: 'CloudFront URL for puzzle recordings and metadata',
