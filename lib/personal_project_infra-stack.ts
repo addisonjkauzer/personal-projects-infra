@@ -106,6 +106,18 @@ export class PersonalProjectInfraStack extends cdk.Stack {
       description: 'URL for the puzzle dashboard website',
     });
 
+    const warmupRule = new events.Rule(this, 'WarmupRule', {
+      ruleName: 'LinkedInPuzzleVisualizerWarmup',
+      schedule: events.Schedule.cron({ minute: '0', hour: '8' }),
+      description: 'Warms up LinkedInPuzzleVisualizer instances 5 minutes before daily run',
+    });
+
+    for (const puzzle of ['ZIP', 'SUDOKU', 'TANGO', 'QUEENS', 'PINPOINT']) {
+      warmupRule.addTarget(new targets.LambdaFunction(visualizerLambda, {
+        event: events.RuleTargetInput.fromObject({ puzzle, warmup: true }),
+      }));
+    }
+
     const dailyRule = new events.Rule(this, 'DailyVisualizationRule', {
       ruleName: 'LinkedInPuzzleVisualizerDaily',
       schedule: events.Schedule.cron({ minute: '5', hour: '8' }),
