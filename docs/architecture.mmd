@@ -1,0 +1,42 @@
+flowchart LR
+    subgraph EB ["EventBridge (Daily)"]
+        W["WarmupRule\n08:00 UTC"]
+        D["DailyRule\n08:05 UTC"]
+    end
+
+    subgraph Compute ["Lambda"]
+        L["LinkedInPuzzleVisualizer\nDocker · 3GB · 15min\n× 5 puzzle types"]
+    end
+
+    subgraph Params ["SSM Parameter Store"]
+        SSM["/linkedin-puzzle-solvers\n/anthropic-api-key"]
+    end
+
+    subgraph Metrics ["CloudWatch"]
+        CW["Custom Metrics"]
+    end
+
+    subgraph Storage ["S3"]
+        RB["linkedin-puzzle-recordings\nversioned + CORS"]
+        WB["linkedin-puzzle-dashboard\nstatic site host"]
+    end
+
+    subgraph CDN ["CloudFront"]
+        PD["PuzzleDistribution\nrecordings/* → optimized cache\ndefault → cache disabled"]
+        WD["WebsiteDistribution\nSPA routing · cache disabled"]
+    end
+
+    subgraph Deploy ["Deploy"]
+        PP["PersonalPortfolio/dist"]
+    end
+
+    W -->|"warmup: true"| L
+    D -->|"puzzle type"| L
+    L -->|"GetParameter"| SSM
+    L -->|"PutMetricData"| CW
+    L -->|"PutObject"| RB
+    L -->|"CreateInvalidation"| PD
+    RB -->|"OAC"| PD
+    WB -->|"OAC"| WD
+    PP -->|"BucketDeployment\n+ invalidation"| WB
+    WD -.->|"fetch recordings\nat runtime"| PD
